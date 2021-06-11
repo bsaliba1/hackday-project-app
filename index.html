@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Web 3 Demo</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src='node_modules/web3/dist/web3.min.js'></script>
+</head>
+<body>
+    Web 3 Demo
+    <br >
+    <button onclick="printCount();">Print Count</button>
+    <button onclick="incrementCount();">Increment Count</button>
+    <button onclick="decrementCount();">Decrement Count</button>
+    <br /><br />
+    Status: <span id="status">Loading...</span>
+    <script type="text/javascript">
+	async function loadWeb3() {
+		if (window.ethereum) {
+			window.web3 = new Web3(window.ethereum);
+			window.ethereum.enable();
+		}
+	}
+	async function loadContract() {
+		const abi = [{"inputs":[],"name":"count","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function","constant":true},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"transactions","outputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"stateMutability":"view","type":"function","constant":true},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"add_transaction","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"get_transactions","outputs":[{"components":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"receiver","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"internalType":"struct Contract.transaction[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function","constant":true},{"inputs":[],"name":"incr","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"decr","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"display","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function","constant":true}];
+		const contractAddress = '0x961AC8f96dcbe5324a560656aF33573e2B62B618';
+		return await new window.web3.eth.Contract(abi, contractAddress);
+	}
+	async function load() {
+		await loadWeb3();
+		window.contract = await loadContract();
+		updateStatus('Ready!');
+	}
+	function updateStatus(status) {
+		const statusEl = document.getElementById('status');
+		statusEl.innerHTML = status;
+		console.log(status);
+	}
+	async function getCurrentAccount() {
+		const accounts = await window.web3.eth.getAccounts();
+		return accounts[0];
+	}
+	async function printCount() {
+		updateStatus('fetching count...');
+		const count= await window.contract.methods.count().call();
+		updateStatus(`count: ${count}`);
+	}
+	async function incrementCount() {
+		updateStatus('incrementing count...');
+		const account = await getCurrentAccount();
+		await window.contract.methods.incr().send({ from: account });
+		updateStatus(`count updated`);
+	}
+	async function decrementCount() {
+		updateStatus('decrementing count...');
+		const account = await getCurrentAccount();
+		await window.contract.methods.decr().send({ from: account });
+		updateStatus(`count updated`);
+	}
+	load();
+    </script>
+</body>
+</html>
