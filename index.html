@@ -9,13 +9,15 @@
     <script src='node_modules/web3/dist/web3.min.js'></script>
 </head>
 <body>
-    Web 3 Demo
+    Local Dev Demo
     <br >
     <button onclick="printCount();">Print Count</button>
     <button onclick="incrementCount();">Increment Count</button>
     <button onclick="decrementCount();">Decrement Count</button>
     <br /><br />
     Status: <span id="status">Loading...</span>
+    <br /><br />
+    <a href="./deployed_contract.html" target="_self">Deployed Contract</a>
     <script type="text/javascript">
 	async function loadWeb3() {
 		if (window.ethereum) {

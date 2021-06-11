@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Web 3 Demo</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <script src='node_modules/web3/dist/web3.min.js'></script>
+</head>
+<body>
+    Deployed Contract Demo
+    <br /><br />
+    <form>
+	<div>
+		<label for="name">Enter your name: </label>
+		<input type="text" name="name" id="name" required>
+	</div>
+	<div>
+		<label for="message">Enter your message: </label>
+		<input type="text" name="message" id="message" required>
+	</div>
+	<div>
+		<button type="button" onclick="sendMessage()">Send!</button>
+	</div>
+    </form>
+    <br /><br />
+    Status: <span id="status">Loading...</span>
+    <br /><br />
+    <strong>Messages</strong>
+    <button onclick="showMessages();">Show Messages</button>
+    <br /> <div id="messages">...</div><br /><br />
+    <a href="./index.html" target="_self">Dev Contract</a>
+    <script type="text/javascript">
+	async function loadWeb3() {
+		if (window.ethereum) {
+			window.web3 = new Web3(window.ethereum);
+			window.ethereum.enable();
+		}
+	}
+	async function loadContract() {
+		const abi = [{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"messages","outputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"text","type":"string"}],"stateMutability":"view","type":"function","constant":true},{"inputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"text","type":"string"}],"name":"add_message","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"get_messages","outputs":[{"components":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"text","type":"string"}],"internalType":"struct MessagesContract.message[]","name":"","type":"tuple[]"}],"stateMutability":"view","type":"function","constant":true}]
+		const contractAddress = '0x2f4412152554d5dcA81ec8E8cf9b6E9140D63288';
+		return await new window.web3.eth.Contract(abi, contractAddress);
+	}
+	async function load() {
+		await loadWeb3();
+		window.contract = await loadContract();
+		updateStatus('Ready!');
+	}
+	function updateStatus(status) {
+		const statusEl = document.getElementById('status');
+		statusEl.innerHTML = status;
+		console.log(status);
+	}
+	function updateMessages(values) {
+		const statusEl = document.getElementById('messages');
+		statusEl.innerHTML = values.map( v => `<div> ${v} </div>`).join("");
+		console.log(values);
+	}
+	async function getCurrentAccount() {
+		const accounts = await window.web3.eth.getAccounts();
+		return accounts[0];
+	}
+	async function showMessages() {
+		updateStatus('getting messages...');
+		const messages= await window.contract.methods.get_messages().call();
+		const formatted_messages = messages.map( message => message.name != "" && message.text != "" ? `${message.name}: ${message.text}` : "")
+		updateMessages(formatted_messages.filter( e => e != ""));
+		updateStatus(`Done!`);
+	}
+	async function sendMessage() {
+		const name = document.getElementById('name').value;
+		const message = document.getElementById('message').value;
+		console.log(name)
+		console.log(message)
+		updateStatus('sending message...');
+		const account = await getCurrentAccount();
+		await window.contract.methods.add_message(name, message).send({ from: account });
+		updateStatus('message sent');
+	}
+	load();
+    </script>
+</body>
+</html>
